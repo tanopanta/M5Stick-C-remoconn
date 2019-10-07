@@ -33,6 +33,12 @@
 const uint16_t kIrLed = 9;  // ESP8266 GPIO pin to use. Recommended: 4 (D2).
 IRDaikinESP ac(kIrLed);  // Set the GPIO to be used to sending the message
 
+struct Earcon {
+  bool active;
+};
+
+Earcon earcon = {false};
+
 void setup() {
   M5.begin();
   ac.begin();
@@ -46,14 +52,26 @@ void loop() {
 
   // M5ボタンで送信
   if ( M5.BtnA.wasPressed() ) {
-    ac.on();
-    ac.setFan(1);
-    ac.setMode(kDaikinCool);
-    ac.setTemp(28);
-    ac.setSwingVertical(false);
-    ac.setSwingHorizontal(false);
-    // Display what we are going to send.
-    M5.lcd.println(ac.toString());
-    ac.send();
+    if (!earcon.active) {
+      ac.on();
+      ac.setFan(1);
+      ac.setMode(kDaikinCool);
+      ac.setTemp(28);
+      ac.setSwingVertical(false);
+      ac.setSwingHorizontal(false);
+      // Display what we are going to send.
+      M5.lcd.println(ac.toString());
+      ac.send();
+
+      earcon.active = true;
+    } else {
+      ac.off();
+      M5.lcd.println(ac.toString());
+      ac.send();
+      
+      earcon.active = false;
+    }
+    
+    
   }
 }
